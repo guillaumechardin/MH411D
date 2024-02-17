@@ -1,6 +1,6 @@
 #pragma once
 /**
- * A nice library that handle MH410D/MH411D sensors from winsen
+ * A nice library that handle MH410D/MH411D sensors from winsen sensors
  *
  * name     : MH411D
  * Author   : Guillaume CHARDIN
@@ -17,12 +17,12 @@
 #include <string.h>
 
 #define VERSION 				"0.0.1"
-#define DEBUG 					0
+#define DEBUG 					1
 
 #define UARTTIMEOUTMS 			5000 	//timeout millis
 
 #define OPERATION_SUCCESS		1
-#define OPERATION_FAILED        0
+#define OPERATION_FAILED        -1
 
 #define UNITS_PPM				1
 #define UNITS_PERCENT			2
@@ -30,6 +30,8 @@
 #define GETCO2FAILED			-10
 #define CHECKSUMFAILED			-11
 #define UARTTIMEOUTFAILED		-20
+
+#define BOOTUPDELAYMS 			5000
 
 
 
@@ -46,7 +48,7 @@ class MH411D
 		 * @param int scale to use either  UNITS_PPM | UNITS_PERCENT
 		 * @return OPERATION_SUCCESS | OPERATION_FAILED
 		 */
-		int begin(Stream * serial, int scale = UNITS_PPM);
+		void begin(Stream * serial, int scale = UNITS_PPM);
 		
 		/*
 		 * getCo2 fetch and calculate CO2 concentration, return result in current units 
@@ -57,18 +59,19 @@ class MH411D
 		int getCo2();
 		
 		/*
-		 * Set sensor calibration level to 0ppm or 0% concertration volume.
+		 * Set sensor calibration level to 0ppm or 0% concentration volume.
 		 * @return void
 		 *
 		 */
-		int setCalibrationZero();
+		void setCalibrationZeroPoint();
 		
 		/*
-		 * Set sensor calibration level to a user defined ppm or  n% concentration volume. (to be fixed)
-		 * @arg span a ppm value.
+		 * Set sensor calibration level to a user defined span points
+		 * @arg spanHighPos a ppm value (sure ?)
+		 * @arg spanLowPos a ppm value (sure ?)
 		 * @return void
 		 */
-		void setCalibrationSpan(int span);
+		void setCalibrationSpanPoint(uint8_t spanHighPos, uint8_t spanLowPos);
 		
 		/*
 		 * Start measure process on sensor.
@@ -88,6 +91,11 @@ class MH411D
 		 * @return int pointer to char with ppm or % symbol
 		 */
 		char* getScaleDsp();
+
+		/**
+		 * 
+		*/
+		static const int BOOTUPDELAY = BOOTUPDELAYMS;
 	
 	protected:
 		/*
@@ -131,9 +139,9 @@ class MH411D
 		 * send data to sensor
 		 * @param uint8_t 9 bytes array of data to send to sensor on serial
 		 * @param int usually 9 as sensor way for 9 bytes
-		 * @return int 
+		 * @return void 
 		 */
-		int sendSensorData(uint8_t *data, uint8_t length);
+		void sendSensorData(uint8_t *data, uint8_t length);
 		
 		/*
 		 * compute checksum from user request or sensor data
